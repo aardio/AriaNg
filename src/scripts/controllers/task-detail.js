@@ -2,7 +2,7 @@
     'use strict';
 
     angular.module('ariaNg').controller('TaskDetailController', ['$rootScope', '$scope', '$routeParams', '$interval', 'clipboard', 'aria2RpcErrors', 'ariaNgFileTypes', 'ariaNgCommonService', 'ariaNgSettingService', 'ariaNgMonitorService', 'aria2TaskService', 'aria2SettingService', function ($rootScope, $scope, $routeParams, $interval, clipboard, aria2RpcErrors, ariaNgFileTypes, ariaNgCommonService, ariaNgSettingService, ariaNgMonitorService, aria2TaskService, aria2SettingService) {
-        var tabOrders = ['overview', 'blocks', 'filelist', 'btpeers'];
+        var tabOrders = ['overview', 'pieces', 'filelist', 'btpeers'];
         var downloadTaskRefreshPromise = null;
         var pauseDownloadTaskRefresh = false;
         var currentRowTriggeredMenu = null;
@@ -28,6 +28,11 @@
 
             if (!$scope.task || $scope.task.status !== task.status) {
                 $scope.context.availableOptions = getAvailableOptions(task.status, !!task.bittorrent);
+            }
+
+            if ($scope.task) {
+                delete $scope.task.verifiedLength;
+                delete $scope.task.verifyIntegrityPending;
             }
 
             $scope.task = ariaNgCommonService.copyObjectTo(task, $scope.task);
@@ -74,6 +79,7 @@
                     }
 
                     var task = response.data;
+
                     processTask(task);
 
                     if (requireBtPeers(task)) {

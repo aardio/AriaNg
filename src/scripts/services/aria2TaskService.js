@@ -294,6 +294,12 @@
             task.remainTime = calculateDownloadRemainTime(task.remainLength, task.downloadSpeed);
             task.seeder = (task.seeder === true || task.seeder === 'true');
 
+            if (task.verifiedLength && task.totalLength) {
+                task.verifiedPercent = parseInt(task.verifiedLength / task.totalLength * 100);
+            } else {
+                task.verifiedPercent = undefined;
+            }
+
             var taskNameResult = getTaskName(task);
             task.taskName = taskNameResult.name;
             task.hasTaskName = taskNameResult.success;
@@ -735,6 +741,8 @@
                 var failedCount = 0;
 
                 var doRetryFunc = function (task, index) {
+                    ariaNgLogService.debug('[aria2TaskService.retryTasks] task#' + index + ', gid=' + task.gid + ' start retrying', task);
+
                     return retryTaskFunc(task.gid, function (response) {
                         ariaNgLogService.debug('[aria2TaskService.retryTasks] task#' + index + ', gid=' + task.gid + ', result=' + response.success, task);
 
@@ -766,7 +774,9 @@
                         currentPromise = doRetryFunc(task, i);
                     } else {
                         currentPromise = (function (task, index) {
-                            return lastPromise.then(function () {
+                            return lastPromise.then(function onSuccess() {
+                                return doRetryFunc(task, index);
+                            }).catch(function onError() {
                                 return doRetryFunc(task, index);
                             });
                         })(task, i);
@@ -801,8 +811,8 @@
                         silent: !!silent,
                         callback: function (response) {
                             ariaNgCommonService.pushArrayTo(results, response.results);
-                            hasSuccess = hasSuccess | response.hasSuccess;
-                            hasError = hasError | response.hasError;
+                            hasSuccess = hasSuccess || response.hasSuccess;
+                            hasError = hasError || response.hasError;
                         }
                     }));
                 }
@@ -813,13 +823,13 @@
                         silent: !!silent,
                         callback: function (response) {
                             ariaNgCommonService.pushArrayTo(results, response.results);
-                            hasSuccess = hasSuccess | response.hasSuccess;
-                            hasError = hasError | response.hasError;
+                            hasSuccess = hasSuccess || response.hasSuccess;
+                            hasError = hasError || response.hasError;
                         }
                     }));
                 }
 
-                return $q.all(promises).then(function () {
+                return $q.all(promises).then(function onSuccess() {
                     if (callback) {
                         callback({
                             hasSuccess: !!hasSuccess,

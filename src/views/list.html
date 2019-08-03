@@ -21,7 +21,7 @@
                             <i class="fa" ng-class="{'fa-sort-asc fa-order-asc': isSetDisplayOrder('percent:asc'), 'fa-sort-desc fa-order-desc': isSetDisplayOrder('percent:desc')}"></i>
                         </div>
                         <div class="col-sm-6">
-                            <a ng-click="changeDisplayOrder('remain:asc', true)" translate>Remain Time</a>
+                            <a ng-click="changeDisplayOrder('remain:asc', true)" translate>Remaining</a>
                             <i class="fa" ng-class="{'fa-sort-asc fa-order-asc': isSetDisplayOrder('remain:asc'), 'fa-sort-desc fa-order-desc': isSetDisplayOrder('remain:desc')}"></i>
                         </div>
                     </div>
@@ -65,13 +65,13 @@
                         <span class="task-last-time"
                               ng-bind="task.status === 'waiting' ? '--:--:--' : (task.status === 'paused' ? '' : (task.status === 'active' ? ((0 <= task.remainTime && task.remainTime < 86400) ? (task.remainTime | dateDuration: 'second': 'HH:mm:ss') : ('More Than One Day' | translate)) : ''))"></span>
                         <span class="task-download-speed visible-xs-inline pull-right"
-                              ng-bind="(task.status === 'active' && !task.verifyIntegrityPending && !task.verifiedLength ? (!task.seeder || task.downloadSpeed > 0 ? (task.downloadSpeed | readableVolume) + '/s' : '-') : (task | taskStatus: true | translate: {errorcode: task.errorCode}))"></span>
+                              ng-bind="(task.status === 'active' && !task.verifyIntegrityPending && !task.verifiedLength ? (!task.seeder || task.downloadSpeed > 0 ? (task.downloadSpeed | readableVolume) + '/s' : '-') : (task | taskStatus: true | translate: {errorcode: task.errorCode, verifiedPercent: task.verifiedPercent}))"></span>
                         <span class="task-seeders pull-right" ng-bind="task.status === 'active' ? ((task.numSeeders ? (task.numSeeders + '/') : '') + task.connections) : ''"></span>
                     </div>
                 </div>
                 <div class="col-md-2 col-sm-2 hidden-xs">
                     <span class="task-download-speed" title="{{task.status === 'active' ? (('Download Speed' | translate) + ': ' + (task.downloadSpeed | readableVolume) + '/s') + (task.bittorrent ? ', ' + ('Upload Speed' | translate) + ': ' + (task.uploadSpeed | readableVolume) + '/s' : '') : ''}}"
-                          ng-bind="(task.status === 'active' && !task.verifyIntegrityPending && !task.verifiedLength ? (!task.seeder || task.downloadSpeed > 0 ? (task.downloadSpeed | readableVolume) + '/s' : '-') : (task | taskStatus: true | translate: {errorcode: task.errorCode}))"></span>
+                          ng-bind="(task.status === 'active' && !task.verifyIntegrityPending && !task.verifiedLength ? (!task.seeder || task.downloadSpeed > 0 ? (task.downloadSpeed | readableVolume) + '/s' : '-') : (task | taskStatus: true | translate: {errorcode: task.errorCode, verifiedPercent: task.verifiedPercent}))"></span>
                 </div>
                 <div class="task-right-arrow visible-md visible-lg">
                     <a ng-href="#!/task/detail/{{task.gid}}" title="{{'Click to view task detail' | translate}}">
@@ -140,7 +140,7 @@
                         </li>
                         <li>
                             <a class="pointer-cursor" ng-click="changeDisplayOrder('remain:asc')">
-                                <span translate>By Remain Time</span>
+                                <span translate>By Remaining</span>
                                 <i class="fa fa-fw" ng-class="{'fa-check': isSetDisplayOrder('remain')}"></i>
                             </a>
                         </li>
@@ -176,15 +176,15 @@
                         <span translate>Select All</span>
                     </a>
                 </li>
-                <li class="divider" ng-if="isSingleUrlTaskSelected() || isSingleBittorrentHasInfoHashTaskSelected()"></li>
-                <li ng-if="isSingleUrlTaskSelected()">
-                    <a tabindex="-1" class="pointer-cursor" title="{{'Copy Download Url' | translate}}" ng-click="copySelectedOneTaskDownloadLink()">
+                <li class="divider" ng-if="isSelectedTasksAllHaveUrl() || isSelectedTasksAllHaveInfoHash()"></li>
+                <li ng-if="isSelectedTasksAllHaveUrl()">
+                    <a tabindex="-1" class="pointer-cursor" title="{{'Copy Download Url' | translate}}" ng-click="copySelectedTasksDownloadLink()">
                         <i class="fa fa-copy fa-fw"></i>
                         <span translate>Copy Download Url</span>
                     </a>
                 </li>
-                <li ng-if="isSingleBittorrentHasInfoHashTaskSelected()">
-                    <a tabindex="-1" class="pointer-cursor" title="{{'Copy Magnet Link' | translate}}" ng-click="copySelectedOneTaskMagnetLink()">
+                <li ng-if="isSelectedTasksAllHaveInfoHash()">
+                    <a tabindex="-1" class="pointer-cursor" title="{{'Copy Magnet Link' | translate}}" ng-click="copySelectedTasksMagnetLink()">
                         <i class="fa fa-copy fa-fw"></i>
                         <span translate>Copy Magnet Link</span>
                     </a>
